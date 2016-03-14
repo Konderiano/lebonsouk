@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/devsimose/!svn/ver/667/trunk/esuPortail/app/views/errors
+END
+4xx.html.twig
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/devsimose/!svn/ver/667/trunk/esuPortail/app/views/errors/4xx.html.twig
+END
+500.html.twig
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/devsimose/!svn/ver/667/trunk/esuPortail/app/views/errors/500.html.twig
+END
+5xx.html.twig
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/devsimose/!svn/ver/667/trunk/esuPortail/app/views/errors/5xx.html.twig
+END
+default.html.twig
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/devsimose/!svn/ver/667/trunk/esuPortail/app/views/errors/default.html.twig
+END
+404.html.twig
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/devsimose/!svn/ver/667/trunk/esuPortail/app/views/errors/404.html.twig
+END

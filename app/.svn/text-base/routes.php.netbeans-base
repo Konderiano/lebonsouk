@@ -1,0 +1,63 @@
+<?php
+
+/*
+ *  Définir les routes/views pour chaque module
+ */
+
+### Principal Route call home_index ###
+$app->get($app['rootRoute'].'/', function () use ($app) {
+    return $app->redirect($app['url_generator']->generate('home_index'));
+})->bind('homepage');
+
+// Récupérer les routes de modules Authentification
+require_once $app['paths']['srcDir'].'/Bundles/Auth/Routes.php';
+
+// Récupérer les routes de modules aveWev
+require_once $app['paths']['srcDir'].'/Bundles/AveWeb/Routes.php';
+
+// Récupérer les routes de modules Base hotline
+require_once $app['paths']['srcDir'].'/Bundles/BaseHotline/Routes.php';
+
+// Récupérer les routes de modules demo
+require_once $app['paths']['srcDir'].'/Bundles/Demo/Routes.php';
+
+// Récupérer les routes de modules dioxybis
+require_once $app['paths']['srcDir'].'/Bundles/Dioxybis/Routes.php';
+
+// Récupérer les routes de modules dioxygene
+require_once $app['paths']['srcDir'].'/Bundles/Dioxygene/Routes.php';
+
+// Récupérer les routes de modules gaston
+require_once $app['paths']['srcDir'].'/Bundles/Gaston/Routes.php';
+
+// Récupérer les routes de modules home
+require_once $app['paths']['srcDir'].'/Bundles/Home/Routes.php';
+
+// Récupérer les routes de modules MORIS
+require_once $app['paths']['srcDir'].'/Bundles/Moris/Routes.php';
+
+// Récupérer les routes de modules nepsi
+require_once $app['paths']['srcDir'].'/Bundles/Nepsi/Routes.php';
+
+// Récupérer les routes de modules OASIS
+require_once $app['paths']['srcDir'].'/Bundles/Oasis/Routes.php';
+
+// Récupérer les routes de modules osDoc
+require_once $app['paths']['srcDir'].'/Bundles/OSDoc/Routes.php';
+
+// Récupérer les routes de modules pepsi
+require_once $app['paths']['srcDir'].'/Bundles/Pepsi/Routes.php';
+
+// Récupérer les routes de modules soda
+require_once $app['paths']['srcDir'].'/Bundles/Soda/Routes.php';
+
+// Récupérer les routes de modules statnico
+require_once $app['paths']['srcDir'].'/Bundles/Statnico/Routes.php';
+
+// Récupérer les routes de modules suivi des problèmes
+require_once $app['paths']['srcDir'].'/Bundles/SuiviProblemes/Routes.php';
+
+// Récupérer les routes de modules vérifications journalières
+require_once $app['paths']['srcDir'].'/Bundles/VerificationsJournalieres/Routes.php';
+
+return $app;

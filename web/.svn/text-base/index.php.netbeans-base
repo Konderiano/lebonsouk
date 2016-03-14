@@ -1,0 +1,171 @@
+<?php
+ini_set('memory_limit', '-1');
+// loader le framework
+$loader = require_once __DIR__ . '/../vendor/autoload.php';
+// instantier $app comme objet de Silex framework
+$app = new Silex\Application();
+// init les params dir de bases
+$baseDir = dirname(dirname(__FILE__));
+$rootFolder = end(explode(DIRECTORY_SEPARATOR, $baseDir));
+$app['paths'] = array('rootFolder' => $rootFolder, 'baseDir' => $baseDir, 'webDir' => dirname(__FILE__), 'vendorDir' => $baseDir . '/vendor', 'appDir' => $baseDir . '/app', 'srcDir' => $baseDir . '/src');
+$app['rootRoute'] = '/'.$rootFolder;
+// Register the Security Service Provider
+$app->register(new Silex\Provider\SecurityServiceProvider());
+$app->register(new Silex\Provider\RememberMeServiceProvider());
+$app->register(new Silex\Provider\SessionServiceProvider());
+// Register UrlGeneratorServiceProvider to call route by binded name
+$app->register(new Silex\Provider\UrlGeneratorServiceProvider());
+// Form configuration
+$app->register(new Silex\Provider\FormServiceProvider());
+$app->register(new Silex\Provider\ValidatorServiceProvider());
+$app->register(new Silex\Provider\TranslationServiceProvider(), array(
+    'translator.domains' => array(),
+));
+// Twig configuration
+$app->register(new Silex\Provider\TwigServiceProvider(), array(
+    'twig.path' => $app['paths']['appDir']."/views",
+    'twig.options' => array('cache' => $app['paths']['appDir']."/cache/twig"),
+));
+
+// charger le fichier de configuration
+$ini_config = parse_ini_file($app['paths']['appDir'].'/config.ini', TRUE);
+// récupérer l'environnement, définir mode de débug et récupérer des info de connexion BD
+$env = isset($ini_config['application']['environnement']) ? $ini_config['application']['environnement'] : 'developpement';
+$config = $ini_config[$env];
+$app['debug'] = (isset($ini_config['application']['environnement']) && $ini_config['application']['environnement'] == "production") ? false : true;
+$app['db.options'] = array(
+    'driver'    => $config['db.driver'],
+    'dbname'    => $config['db.dbname'],
+    'host'      => $config['db.host'],
+    'user'      => $config['db.user'],
+    'password'  => $config['db.password'],
+    'characset' => $config['db.characset'],
+);
+
+//Second Database
+$secondDB = isset($ini_config['application']['secondDatabase']) ? $ini_config['application']['secondDatabase'] : NULL;
+$dbName = NULL;
+if('1' === $secondDB){
+    $secondConfig = $ini_config["secondDatabase_".$env];
+    $dbName = $secondConfig['db.dbname'];
+    $app[$dbName.'.options'] = array(
+      'driver'    => $secondConfig['db.driver'],
+      'dbname'    => $secondConfig['db.dbname'],
+      'host'      => $secondConfig['db.host'],
+      'user'      => $secondConfig['db.user'],
+      'password'  => $secondConfig['db.password'],
+      'characset' => $secondConfig['db.characset'],
+  );  
+}
+
+// set ldap config
+$app["ldap"] = array();
+if(isset($ini_config["ldap"])){
+    $app["ldap"] = array(
+       'host'    => $ini_config["ldap"]["ldap.host"],
+       'port'    => $ini_config["ldap"]["ldap.port"],
+       'bind_dn' => $ini_config["ldap"]["ldap.dn"],
+       'dn_pwd'  => $ini_config["ldap"]["ldap.password"],
+       'logPath' => $app['paths']['baseDir'].DIRECTORY_SEPARATOR.$ini_config["ldap"]["ldap.logPath"],
+    );
+}
+
+// instantier un objet de connexion PDO
+$app['db'] = $app->share(function($app) {
+    return new Core\Classes\Database($app['db.options']);
+});
+// creation d'une instance de connexion en cas d'existance !
+if('1' === $secondDB && !is_null($dbName)){
+    $app->before(function() use ($app, $dbName) {
+        $app[$dbName] = $app->share(function() use ($app, $dbName) {
+            return new Core\Classes\Database($app[$dbName.'.options']);
+        });
+    });
+}
+
+// Set the Firewall options
+$app['security.firewalls'] = array(
+        'unsecured_area' => array(
+            'pattern' => "^/$rootFolder/connexion$",
+            'anonymous' => true
+        ),
+        'secured_area' => array(
+            'pattern' => "^/$rootFolder/.*$",
+            'anonymous' => true,
+            'form' => array(
+                'login_path' => "/$rootFolder/connexion", // route de page de connexion
+                'check_path' => "/$rootFolder/connexion_check", // route de étape d'authentification
+                'default_target_path' => "/$rootFolder/home", // en cas de succes redirection vers ce lien
+            ),
+            'logout' => array(
+                'logout_path' => "/$rootFolder/deconnexion", // url de deconnexion
+                'target_url' => "/$rootFolder/connexion",   // url de redirection après déconnexion
+                'invalidate_session' => true, //effacer tous les données de sessions lors de logout
+            ),
+            'remember_me' => array(
+                    'key'       => 'vTHJ4hTDQoOhmlvZV1',
+                    'lifetime'  => "86400", //24h
+//                    'domain'    => "doaat-esu.edf.fr",
+                    'secure'    => true,
+//                    'always_remember_me' => true,
+            ),
+            'users' =>  $app->share(function () use ($app) {
+                return new Bundles\Auth\Models\UserProvider($app);
+            }),
+        )
+); 
+            
+// Set the Access List options
+$app['security.access_rules'] = array(
+        array("^/$rootFolder/connexion", 'IS_AUTHENTICATED_ANONYMOUSLY', 'https'), // Forcer https pour proteger l'authentification
+        array("^/$rootFolder/.+$", 'ROLE_USER', 'https'),
+        //TODO: ADD PIWIK FOR ADMIN ROLE
+);
+//Les Events 
+//$app->on(AuthenticationEvents::AUTHENTICATION_FAILURE, function (AuthenticationEvent $event) {
+//});
+//
+//$app->on(\Symfony\Component\Security\Core\AuthenticationEvents::AUTHENTICATION_SUCCESS, function () {
+//    return $app->redirect($app['url_generator']->generate('home_index'));
+//});
+//
+//$app->on(SecurityEvents::INTERACTIVE_LOGIN, function (InteractiveLoginEvent $event) {
+//});
+//
+//$app->on(SecurityEvents::SWITCH_USER, function (SwitchUserEvent $event) {
+//});
+
+// Récupérer tous les routes avant de lancer l'application
+$app = require_once $app['paths']['appDir'].'/routes.php';
+
+// Gestion d'erreur 
+$app->error(function (\Exception $e, $code) use ($app) {
+    if ($app['debug']) { // Si débuggage est activé on n'affiche pas les pages erreurs
+        return;
+    }
+    // 404.html, or 40x.html, or 4xx.html, or default.html
+    switch ($code) {
+        case 404:
+            $message    = 'Oupesss, La page demandée est introuvable.';
+            $templates  = '/errors/'.$code.'.html.twig';
+            break;
+        case (substr($code, 0, 1) == 4):
+            $message = 'Oupesss, Une erreur est survenue sur le client.';
+            $templates  = '/errors/4xx.html.twig';
+            break;
+        case 500:
+            $message = 'Oupesss, Erreur interne du serveur.';
+            $templates  = '/errors/'.$code.'.html.twig';
+            break;
+        case (substr($code, 0, 1) == 5):
+            $message = 'Oupesss, Une erreur est survenue sur le serveur.';
+            $templates  = '/errors/5xx.html.twig';
+            break;
+        default:
+            $message    = 'Oupesss, Nous sommes désolés mais quelque chose a terriblement mal.';
+            $templates  = '/errors/default.html.twig';
+    }
+    return  $app['twig']->render($templates, array("message" => $message));
+});
+
+$app->run(); 
