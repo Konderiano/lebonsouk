@@ -1,9 +1,0 @@
-{% extends "base.html.twig" %}
-
-{% block contents %}
-    {% if message|default %}
-        {{ message }}
-    {% else %}
-        Page not found.
-    {% endif %}
-{% endblock %}
