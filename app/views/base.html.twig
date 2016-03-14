@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html ng-app="esuPortail">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}{% endblock title %}</title>
+        <meta name="description" content="{% block description %}{% endblock description %}">
+        <meta name="author" content="{% block author %}{% endblock author %}">
+        {% block headStyle %} {% endblock headStyle %}
+        {% block headJS %} {% endblock headJS %}
+    </head>
+	
+    <body role="document">
+        {% block body %}
+            <div class="head" role="head">
+                {% block page_header %}{% endblock page_header %}
+            </div>
+            <div class="container" role="main" style="width: 100%">
+                {% block contents %}{% endblock contents %}
+            </div>
+            <div id="importJs">
+                {% block footJSForLayer %} {% endblock footJSForLayer %}
+                {% block footJS %} {% endblock footJS %}
+            </div>
+        {% endblock body %}
+    </body>
+</html>

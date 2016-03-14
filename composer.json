@@ -1,0 +1,15 @@
+{
+    "minimum-stability" : "stable",
+    "require" : {
+        "silex/silex"   : "~1.2",
+        "twig/twig"     : "~1.16",
+        "doctrine/dbal": "^2.5"
+    },
+    "autoload" : {
+        "psr-0": {
+            "Core"      : "src/",
+            "Bundles"   : "src/" ,
+            "Controller": "src/"       
+        }
+    }
+}
