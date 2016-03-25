@@ -7,18 +7,21 @@
         <title>{% block title %}{% endblock title %}</title>
         <meta name="description" content="{% block description %}{% endblock description %}">
         <meta name="author" content="{% block author %}{% endblock author %}">
+        <link type="text/css" rel="stylesheet" href="{{ app.rootRoute }}/web/css/bootstrap.css" />
         {% block headStyle %} {% endblock headStyle %}
         {% block headJS %} {% endblock headJS %}
     </head>
 	
     <body role="document">
         {% block body %}
+            <div class="jumbotron">salut</div>
             <div class="head" role="head">
                 {% block page_header %}{% endblock page_header %}
             </div>
             <div class="container" role="main" style="width: 100%">
                 {% block contents %}{% endblock contents %}
             </div>
+            
             <div id="importJs">
                 {% block footJSForLayer %} {% endblock footJSForLayer %}
                 {% block footJS %} {% endblock footJS %}
